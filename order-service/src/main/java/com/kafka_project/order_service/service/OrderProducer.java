@@ -32,4 +32,8 @@ public class OrderProducer {
         kafkaTemplate.send(message);
     }
 
+    public void sendOrderEvent(OrderEvent orderEvent) {
+        send(orderEvent);
+    }
+
 }

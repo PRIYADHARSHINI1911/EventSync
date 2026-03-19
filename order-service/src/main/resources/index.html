@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kafka Pro - Order Management UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: slideDown 0.5s ease-in-out;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.5s ease-in-out;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.2);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            padding: 8px 15px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .btn-delete:hover {
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .orders-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .order-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .order-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .order-item h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .order-item p {
+            color: #666;
+            font-size: 0.95em;
+            margin: 4px 0;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Kafka Pro</h1>
+            <p>Order Management System</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2>📝 Create New Order</h2>
+                <div id="createMessage" class="message"></div>
+                <form id="orderForm">
+                    <div class="form-group">
+                        <label for="productName">Product Name</label>
+                        <input type="text" id="productName" placeholder="e.g., Laptop" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Quantity</label>
+                        <input type="number" id="quantity" placeholder="e.g., 5" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Price (per unit)</label>
+                        <input type="number" id="price" placeholder="e.g., 999.99" min="0" step="0.01" required>
+                    </div>
+                    <button type="submit">Create Order</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>📊 Order Statistics</h2>
+                <div style="margin-top: 20px;">
+                    <div style="margin-bottom: 20px;">
+                        <p style="color: #999; margin-bottom: 5px;">Total Orders</p>
+                        <p style="font-size: 2.5em; color: #667eea; font-weight: bold;" id="totalOrders">0</p>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <p style="color: #999; margin-bottom: 5px;">Total Value</p>
+                        <p style="font-size: 2.5em; color: #764ba2; font-weight: bold;" id="totalValue">$0.00</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h2>📦 Recent Orders</h2>
+                <div id="ordersList" class="orders-list">
+                    <div class="empty-state">
+                        <p>No orders yet. Create your first order!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api/orders';
+
+        // Create Order
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const order = {
+                name: document.getElementById('productName').value,
+                quantity: parseInt(document.getElementById('quantity').value),
+                price: parseFloat(document.getElementById('price').value)
+            };
+
+            try {
+                const response = await fetch(API_BASE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(order)
+                });
+
+                if (response.ok) {
+                    showMessage('Order created successfully!', 'success', 'createMessage');
+                    document.getElementById('orderForm').reset();
+                    loadOrders();
+                } else {
+                    const error = await response.text();
+                    showMessage('Error creating order: ' + error, 'error', 'createMessage');
+                }
+            } catch (error) {
+                showMessage('Network error: ' + error.message, 'error', 'createMessage');
+            }
+        });
+
+        // Load Orders
+        async function loadOrders() {
+            try {
+                const response = await fetch(API_BASE_URL);
+                const orders = await response.json();
+
+                const ordersList = document.getElementById('ordersList');
+                
+                if (orders.length === 0) {
+                    ordersList.innerHTML = '<div class="empty-state"><p>No orders yet. Create your first order!</p></div>';
+                } else {
+                    ordersList.innerHTML = orders.map(order => `
+                        <div class="order-item">
+                            <h4>Order #${order.orderId}</h4>
+                            <p><strong>Product:</strong> ${order.name}</p>
+                            <p><strong>Quantity:</strong> ${order.quantity} units</p>
+                            <p><strong>Price:</strong> $${order.price.toFixed(2)} per unit</p>
+                            <p><strong>Total:</strong> $${(order.quantity * order.price).toFixed(2)}</p>
+                            <span class="status-badge">PENDING</span>
+                            <button class="btn-delete" onclick="deleteOrder(${order.orderId})">Delete</button>
+                        </div>
+                    `).join('');
+                }
+
+                // Update statistics
+                const totalOrders = orders.length;
+                const totalValue = orders.reduce((sum, order) => sum + (order.quantity * order.price), 0);
+                
+                document.getElementById('totalOrders').textContent = totalOrders;
+                document.getElementById('totalValue').textContent = '$' + totalValue.toFixed(2);
+            } catch (error) {
+                console.error('Error loading orders:', error);
+            }
+        }
+
+        // Delete Order
+        async function deleteOrder(id) {
+            if (confirm('Are you sure you want to delete this order?')) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        loadOrders();
+                        showMessage('Order deleted successfully!', 'success', 'createMessage');
+                    } else {
+                        showMessage('Error deleting order', 'error', 'createMessage');
+                    }
+                } catch (error) {
+                    showMessage('Network error: ' + error.message, 'error', 'createMessage');
+                }
+            }
+        }
+
+        // Show Message
+        function showMessage(text, type, elementId) {
+            const element = document.getElementById(elementId);
+            element.textContent = text;
+            element.className = `message ${type}`;
+            
+            setTimeout(() => {
+                element.className = 'message';
+            }, 4000);
+        }
+
+        // Auto-refresh every 5 seconds
+        setInterval(loadOrders, 5000);
+
+        // Initial load
+        loadOrders();
+    </script>
+</body>
+</html>
