@@ -9,4 +9,3 @@ Kafka
 4) Create packages config, controller, entity, dto, repository, service
 5) Create KafkaConfig file and add the configuration   
   
-Git : 
